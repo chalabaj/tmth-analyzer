@@ -14,16 +14,20 @@
  STOP          
  END SUBROUTINE Print_help
  
- SUBROUTINE channels (dist,Natoms,channel,dissH,dissmolH,ho1,ho2)
+ SUBROUTINE channels (dist,channel,dissH,dissmolH,ho1,ho2)
  IMPLICIT NONE
  REAL*8,  intent(in)           :: dist(:,:)
- INTEGER, intent(in)           :: Natoms 
- INTEGER, intent(out)          :: channel,dissH,dissmolH,ho1,ho2  ! output vars
- INTEGER                       :: Ndiss_H,h1,h2,diss_molH,hh,h_o1,h_o2
- INTEGER, allocatable          :: diss_H_at(:)
- REAL*8, parameter             :: OH_bond_dist = 2.000 ,OO_bond_dist = 4.500, H_diss_limit = 3.000
- REAL*8, parameter             :: HH_bond_dist = 1.5
-  
+ INTEGER, intent(out)          :: channel,dissH,dissmolH,c1h,c2h,c3h,oh  ! cXh number of H atoms on C
+ INTEGER                       :: diss_H_at(10), hh  ! hydrogen counter   
+ REAL*8,  parameter            :: OH_bond_dist = 2.000, OO_bond_dist = 4.500, CH_bond_dist = 3.000
+ REAL*8,  parameter            :: HH_bond_dist = 1.500, SnH_bond_dist = 3.000,
+ INTEGER, parameter            :: Natoms
+!1-Sn
+!2-C
+!3-C
+!4-C
+!5-O
+
 ! WAT DIM ANALYSIS at each timestep
 ! diss_H - dissociated H atoms, if diss_H > 2 check for molecular hydrogen 
 ! h_o1 h_o2 number of hydrogen atoms on each oxygen   
@@ -45,17 +49,19 @@
 ! 13 1 mol H2 diss, 2x OH dissociated  
 ! 14 1 mol H2 diss, OH...OH bondedg
 
-        h_o1 = 0
-        h_o2 = 0
-        Ndiss_H = 0
-        diss_molH = 0
+        c1h = 0
+        c2h = 0
+        c3h = 0
+        oh  = 0
+        dissH = 0
+        dissmolH = 0
         channel = 1
-        allocate ( diss_H_at(4) )
+        Natoms = 15
         
-        do hh=3,Natoms,1   ! 1 and 2 are oxygen atoms
-          if ( dist(1,hh).gt.H_diss_limit.AND.dist(2,hh).gt.H_diss_limit ) then
-            Ndiss_H = Ndiss_H + 1
-            diss_H_at(Ndiss_H) = hh          ! which H(hh) is dissociated
+  do hh=6,Natoms,1   ! 1-5 heavy atoms
+   if ( dist(1,hh).gt.SnH_bond_dist.AND.dist(2,hh).gt.CH_bond_dist.AND.dist(3,hh).gt.CH_bond_dist.AND.dist(4,hh).gt.CH_bond_dist.AND.dist(5,hh).gt.OH_bond_dist ) then
+     dissH = dissH + 1
+     diss_H_at(Ndiss_H) = hh          ! which H(hh) is dissociated
           ! if not dissociated then where the hydrogen is? O1 or O2 
           else if( dist(1,hh).lt.dist(2,hh).AND.dist(1,hh).lt.OH_bond_dist )then 
           h_o1 = h_o1 + 1
