@@ -1,7 +1,9 @@
 # return movies[]
-
+https://stackoverflow.com/questions/27164114/show-confidence-limits-and-prediction-limits-in-scatter-plot
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4175406/
-
+http://www.dummies.com/education/science/biology/confidence-interval-basics/
+https://studywolf.wordpress.com/2017/11/21/matplotlib-legends-for-mean-and-confidence-interval-plots/
+https://www.google.cz/search?q=python+plot+with+ocnfidence+interval&ie=utf-8&oe=utf-8&client=firefox-b-ab&gfe_rd=cr&dcr=0&ei=OS_HWs31MMbV8gfC1a-YAg
 import csv
 def splitNet():
     with open("/home/tom/Dropbox/CN/Python/CW2/network.txt") as nf:
