@@ -1,0 +1,11 @@
+# return movies[]
+
+
+
+import csv
+def splitNet():
+    with open("/home/tom/Dropbox/CN/Python/CW2/network.txt") as nf:
+        for line in csv.reader(nf, delimiter=','):
+            yield map(int, line)
+network = list(splitNet())
+print (network)
