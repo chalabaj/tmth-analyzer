@@ -8,23 +8,40 @@ import time
 import os
 
 def input_check():
-    n_movies = len(sys.argv)  #sys.argv[0] is script name
-    movies = sys.argv  # list of movies to process
+    #global movies
+    n_movies = len(sys.argv) # 0 is script name
+    molecule = sys.argv[1]   # TMTH or THMS
+    if not (molecule == "tm" or molecule == "th"):
+       print('Wrong system (tm/th), received:  ', molecule)
+       sys.exit(1)
+    
+    movs = sys.argv[2:]      # list of movies to process
     print('Number of movie files requested:', n_movies)
-    print('Movie: ',movies)
     i = 0
-    movie = []
-    for mov in movies:
-       print(mov)
+    movies = []
+    for mov in movs:
        movie_path = os.getcwd()+'/'+mov
-       print(movie_path)
+       #print(movie_path)
        if os.path.isfile(movie_path):
-         movie.append(movie_path)
-         print('File:',i,movie[i])
-         i = i + 1
+         movies.append(movie_path)
+         print(mov,' OK')
        else:
-         print('ERROR: File', movie_path ,'does not exists.')    
-   
-     
-input_check()
-print('File check finished!')
+         print(mov ,'ERROR NOT EXISTS.')    
+    print('File check finished',"\n",'##########FILES:############################')
+    return molecule,movies
+#end input check
+
+def distance_matrix(movies)
+
+    dist_mat = []
+    return dist_mat
+    
+
+molecule,movies=input_check()
+print("\n".join(movies))
+
+for mov in movies: 
+  
+
+
+distance_matrix(movies)
