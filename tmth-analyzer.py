@@ -6,6 +6,12 @@ import numpy
 import random
 import time
 import os
+import subprocess
+import string
+
+##############################################
+##############################################
+##############################################
 
 def input_check():
     #global movies
@@ -20,7 +26,8 @@ def input_check():
     i = 0
     movies = []
     for mov in movs:
-       movie_path = os.getcwd()+'/'+mov
+       base_dir = os.getcwd()
+       movie_path = os.path.join(base_dir, mov)
        #print(movie_path)
        if os.path.isfile(movie_path):
          movies.append(movie_path)
@@ -31,17 +38,30 @@ def input_check():
     return molecule,movies
 #end input check
 
-def distance_matrix(movies)
+def distance_matrix(movies):
 
     dist_mat = []
     return dist_mat
     
+def n_lines(mov):
+    f = open(mov)                  
+    lines = 0
+    buf_size = 1024 * 1024
+    read_f = f.read # loop optimization
+    buf = read_f(buf_size)
+    while buf:
+        lines += buf.count('\n')
+        buf = read_f(buf_size)
 
+    return lines
+
+##############################################
+##############################################
+##############################################
 molecule,movies=input_check()
 print("\n".join(movies))
 
 for mov in movies: 
-  
-
-
-distance_matrix(movies)
+     nlines=n_lines(mov)
+     print(nlines)
+#distance_matrix(movies)
