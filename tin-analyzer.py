@@ -8,7 +8,7 @@ import time
 import os
 import subprocess
 import string
-
+import itertools
 ##############################################
 ##############################################
 ##############################################
@@ -49,10 +49,7 @@ def input_check():
     print('File check finished.',"\n",'##########FILES:############################')
     return molecule,movies,geoms
 #end input check
-def eudis5(v1, v2):
-    dist = [(a - b)**2 for a, b in zip(v1, v2)]
-    dist = math.sqrt(sum(dist))
-    return dist
+
 
 def distance_matrix(movies,geoms):
      
@@ -60,27 +57,33 @@ def distance_matrix(movies,geoms):
          print("Processing ",m,"movie: ",mov)
          with open(mov,'r') as f:
           geoms[m] = 1                        # comment for real run
-          for g in range(1,int(geoms[m])+1):  # iterate over geoms in each mov file
+          for g in range(1,int(geoms[m])+1):  # iterate over geoms in each mov file, first index is inclusive, last exclusive!
               natoms = int(f.readline())
               time  = f.readline().split()[6]
               if g == 1:
                  xyz = np.zeros(shape=(natoms,3))
               print('g: ',g)
-              for at in range(natoms):        # iterate over atoms in each geometry
+              for at in range(0,natoms):        # iterate over atoms in each geometry
                   line = f.readline().split()
                   xyz[at]=[float(line[1]),float(line[2]),float(line[3])]
               print(time,"\n",xyz)
-              i = 0
-              for l in range(0,natoms):
-                for k in range(l+1,natoms):
-                        v1, v2 = np.array(xyz[l]), np.array(xyz[k])
-                        print(l,k,v1,v2)
-              print(i)                         
+              # all combination of pairs, easily by all_pairs = list(itertools.combinations(range(natoms),2)) - yet still need to loop over two-indices to call eucdist func
+              # CREATE empty dist matrix  - should be upper triangular (jagged)  but since the memory is stored only for each geometry - no nned
+              dist_mat = np.zeros(shape=(natoms-1,natoms))
+              print(dist_mat)
+              for k in range(0,natoms):
+                for l in range(k+1,natoms):
+                    v1, v2 = np.array(xyz[k]), np.array(xyz[l])
+                    dist = [(a - b)**2 for a, b in zip(v1, v2)]
+                    dist_mat[k][l] = math.sqrt(sum(dist))
+                    # combination check: print(v1,v2,l,k)
+              #print(list(itertools.combinations(range(natoms),2)),len(list((itertools.combinations(range(natoms),2)))))
+              np.savetxt('dist_mat.dat', dist_mat, newline='\n', fmt='%.8e')
           f.close()
      dist_mat = []
      return dist_mat
     
-def geoms_check(mov,lines_per_mol):   # checks the integry of movie files                  
+def geoms_check(mov,lines_per_mol):   # checks the integry of movie files, fast number_of_lines_ reader, exploits limited buffer size                 
     lines = 0
     geoms = 0
     buf_size = 1024 * 1024
