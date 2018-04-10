@@ -2,7 +2,7 @@
 
 import math
 import sys
-import numpy
+import numpy as np
 import random
 import time
 import os
@@ -47,13 +47,33 @@ def input_check():
        else:
          print(mov ,'ERROR NOT EXISTS.')    
     print('File check finished',"\n",'##########FILES:############################')
-    return molecule,movies
+    return molecule,movies,geoms
 #end input check
+def eudis5(v1, v2):
+    dist = [(a - b)**2 for a, b in zip(v1, v2)]
+    dist = math.sqrt(sum(dist))
+    return dist
 
-def distance_matrix(movies):
-
-    dist_mat = []
-    return dist_mat
+def distance_matrix(movies,geoms):
+     
+     for m in range(len(movies)):
+       print(m,movies[m])
+       with open(movies[m],'r') as f:
+       
+        geoms[m] = 3
+        for g in range(1,int(geoms[m])):
+          natoms = int(f.readline())
+          title  = f.readline()
+          if g == 1:
+            xyz = np.zeros(shape=(natoms,3))
+          #print('g: ',g)
+          for at in range(natoms):
+             line = f.readline().split()
+             xyz[at]=[float(line[1]),float(line[2]),float(line[2])]
+          print(xyz)                        
+        f.close()
+     dist_mat = []
+     return dist_mat
     
 def geoms_check(mov,lines_per_mol):   # checks the integry of movie files                  
     lines = 0
@@ -78,8 +98,13 @@ def geoms_check(mov,lines_per_mol):   # checks the integry of movie files
 ##############################################
 ##############################################
 ##############################################
-molecule,movies=input_check()
-print("\n".join(movies))
+
+molecule,movies,geoms=input_check()
+print("\n".join(movies),"\n",molecule,geoms)
+print("#######################\n")
+
+distance_matrix(movies,geoms)
+
 
 
 #distance_matrix(movies)
