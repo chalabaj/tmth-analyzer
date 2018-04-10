@@ -1,5 +1,18 @@
 #!/usr/bin/env python
 
+''' ANALYZE MOVIES
+working in anaconda WITH python 3.6.5
+PROGRAM DO GEOMETRY ANALYSIS OF MOVIE-LIKE (in XYZ format) FILES
+
+FOR ANY MOLECULAR SYSTEM ONLY /natoms & molecule/ VARABLES NEED TO BE MODIFIED IN FUNCTION input_check() TO GET DISTANCE MATRICES
+
+1/ EACH FILE IS CHECKED IF IT IS COMPLETE (NUMBER OF LINE MUST MATCH NATOMS+2 CRITERIA) :: def geoms_check
+2/ GO THROUGH EACH MOVIE ONE BY ONE GEMEOTRY -> CREATE DISTANCE MATRIX // should be fast according to measuring of walltime
+3/ PROCESS DISTANCE MATRIX ACCORDING TO PARTICULAR SYSTEM (ANALYSIS IS ALWAYS DIFFERENT AND DEPENDS ON POSSIBLE REACTION CHENNEL) 
+
+- TO DO - CREATE  CLUSTERING ALGORITHM INDEPENDENT OF SYSTEM WHICH WILL FIND MOLECULAR FRAGMENT/SEPARATE MOLECULES 
+- IF DISTANCE MATRICES ARE STORED FOR FUTURE USE, JAGGED MATRICES MIGHT BE BETTER  AND SAVE MEMORY INSTEAD OF USING THE FULL NATOMS X NATOMS DISTANCE MATRIX
+'''
 import math
 import sys
 import numpy as np
@@ -12,21 +25,28 @@ import itertools
 ##############################################
 ##############################################
 ##############################################
-#Constant:
+#ConstantS - CRITERIA FOR GEOMETRY ANALYSIS 
+OH_bond_dist  = 2.000 
+OO_bond_dist  = 4.500
+CH_bond_dist  = 3.000
+HH_bond_dist  = 1.500 
+SnH_bond_dist = 3.000
 
 
 def input_check():
+    global molecule,natoms   # same number and molecule for all movies and geoms
     movies  = []
     lines   = []
     geoms   = []
-
     molecule = sys.argv[1]   # TMTH or THMS
     movs = sys.argv[2:]      # list of movies to process
-        
+    # IF NEW MOLECULE ADDER, EXTEND HERE NEW PARAMETERS
     if molecule == "tm":
-       lines_per_mol = 17 
+       lines_per_mol = 17
+       natoms = 15
     elif molecule == "th":
        lines_per_mol = 13
+       natoms = 11
     else:
        print('Wrong system (tm/th), received:  ', molecule)
        sys.exit(1)
@@ -50,68 +70,91 @@ def input_check():
     return molecule,movies,geoms
 #end input check
 
-
-def distance_matrix(movies,geoms):
-     
-     for m,mov in enumerate(movies):   # iterate over movies
-         print("Processing ",m,"movie: ",mov)
-         with open(mov,'r') as f:
-          geoms[m] = 1                        # comment for real run
-          for g in range(1,int(geoms[m])+1):  # iterate over geoms in each mov file, first index is inclusive, last exclusive!
-              natoms = int(f.readline())
-              time  = f.readline().split()[6]
-              if g == 1:
-                 xyz = np.zeros(shape=(natoms,3))
-              print('g: ',g)
-              for at in range(0,natoms):        # iterate over atoms in each geometry
-                  line = f.readline().split()
-                  xyz[at]=[float(line[1]),float(line[2]),float(line[3])]
-              print(time,"\n",xyz)
-              # all combination of pairs, easily by all_pairs = list(itertools.combinations(range(natoms),2)) - yet still need to loop over two-indices to call eucdist func
-              # CREATE empty dist matrix  - should be upper triangular (jagged)  but since the memory is stored only for each geometry - no nned
-              dist_mat = np.zeros(shape=(natoms-1,natoms))
-              print(dist_mat)
-              for k in range(0,natoms):
-                for l in range(k+1,natoms):
-                    v1, v2 = np.array(xyz[k]), np.array(xyz[l])
-                    dist = [(a - b)**2 for a, b in zip(v1, v2)]
-                    dist_mat[k][l] = math.sqrt(sum(dist))
-                    # combination check: print(v1,v2,l,k)
-              #print(list(itertools.combinations(range(natoms),2)),len(list((itertools.combinations(range(natoms),2)))))
-              np.savetxt('dist_mat.dat', dist_mat, newline='\n', fmt='%.8e')
-          f.close()
-     dist_mat = []
-     return dist_mat
-    
 def geoms_check(mov,lines_per_mol):   # checks the integry of movie files, fast number_of_lines_ reader, exploits limited buffer size                 
     lines = 0
     geoms = 0
     buf_size = 1024 * 1024
     with open(mov,'r') as f:
-     read_f = f.read
-     buf = read_f(buf_size)
-     while buf:
-        lines += buf.count('\n')  
-        #\n) is left at the end of the string, and is only omitted on the last line of the file
-        buf = read_f(buf_size)
-    f.close()
-    if not (lines % lines_per_mol):  
-       geoms = lines / lines_per_mol
+      read_f = f.read
+      buf = read_f(buf_size)
+      while buf:
+         lines += buf.count('\n')  
+         #\n) is left at the end of the string, and is only omitted on the last line of the file
+         buf = read_f(buf_size)
+      f.close()
+    if not (lines % lines_per_mol): geoms = lines / lines_per_mol
     else:
-       print('Nlines is not divisible by lpm: ',lines, lines_per_mol)
+       print('Nlines is not divisible by l_p_m: ',lines, lines_per_mol)
        sys.exit(1)
-    
     return lines,geoms
 
+# MAIN ROUTINE TO GO THROUGH EACH MOVIE - READ XYZ, CALCULATE DISTANCE, ANALYZE GEOMETRY
+def process_movies(movies,geoms):
+
+     for m,mov in enumerate(movies):   # iterate over movies
+         #global natoms
+         print("Processing ",m+1,"movie: ",mov)
+         with open(mov,'r') as f:
+          geoms[m] = 5 
+          
+                  # comment for real run
+          for g in range(1,int(geoms[m])+1):  # iterate over geoms in each mov file, first index is inclusive, last exclusive!
+              #natoms = int(f.readline())
+              f.readline()                    # atoms
+              time   = f.readline().split()[6] # comment + time
+              if g == 1:
+                 xyz = np.zeros(shape=(natoms,3))
+                 if os.path.isfile(os.path.join(os.getcwd(),'dist_mat.dat')): os.remove('dist_mat.dat')     
+              print('geometry: ',g)
+              for at in range(0,natoms):        # iterate over atoms in each geometry
+                  line = f.readline().split()
+                  xyz[at]=[float(line[1]),float(line[2]),float(line[3])]
+              #print(time,"\n",xyz)
+              
+              dist_mat = distance_matrix(xyz)
+              # Other molecules can be 
+              if molecule == "tm"   :  channel  = analyze_tm(dist_mat)
+              elif molecule == "th" :  channel  = analyze_th(dist_mat)
+              
+              print("channel: ",channel)
+          f.close()
+    
+     
+# DISTANCE MATRIX
+def distance_matrix(xyz):    
+# all combination of pairs: list(itertools.combinations(range(natoms),2)) - yet still need to loop over two-indices to call dist func
+# create empty dist matrix - matrix is not stored for future
+# brute force number of combinations len(list((itertools.combinations(range(natoms),2))))
+    dist_mat = np.zeros(shape=(natoms-1,natoms))
+    #print(dist_mat)
+    for k in range(0,natoms):
+          for l in range(k+1,natoms):
+                v1, v2 = np.array(xyz[k]), np.array(xyz[l])
+                dist = [(a - b)**2 for a, b in zip(v1, v2)]
+                dist_mat[k][l] = math.sqrt(sum(dist))
+                # print(v1,v2,l,k) # combination check
+    with open('dist_mat.dat','a') as file_dist_save:  # save dist_mat in file for check if needed
+      np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
+    return dist_mat
+
+# GEOMETRY ANALYSISI    
+def analyze_tm(dist_mat):
+    #print(molecule,natoms)
+    channel = 0
+    
+    return channel
 ##############################################
-##############################################
+     ##########  MAIN SEQUENCE  ##########
 ##############################################
 
 molecule,movies,geoms=input_check()
 print("Movie::\n".join(movies),"\n","Molecule: ",molecule,"\n Geoms: ",geoms)
 print("#######################\n")
 
-distance_matrix(movies,geoms)
+# create channel, statistics!!!
+channel = process_movies(movies,geoms)   # np.array returned as upper diagonal matrix
+
+
 
 
 
