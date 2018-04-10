@@ -45,8 +45,8 @@ def input_check():
          geoms.append(gc[1])
          print(mov,' OK, Nlines: ', lines[-1], 'Ngeoms: ', geoms[-1])
        else:
-         print(mov ,'ERROR NOT EXISTS.')    
-    print('File check finished',"\n",'##########FILES:############################')
+         print(mov ,' File NOT EXISTS.')    
+    print('File check finished.',"\n",'##########FILES:############################')
     return molecule,movies,geoms
 #end input check
 def eudis5(v1, v2):
@@ -56,22 +56,27 @@ def eudis5(v1, v2):
 
 def distance_matrix(movies,geoms):
      
-     for m in range(len(movies)):
-       print(m,movies[m])
-       with open(movies[m],'r') as f:
-       
-        geoms[m] = 3
-        for g in range(1,int(geoms[m])):
-          natoms = int(f.readline())
-          title  = f.readline()
-          if g == 1:
-            xyz = np.zeros(shape=(natoms,3))
-          #print('g: ',g)
-          for at in range(natoms):
-             line = f.readline().split()
-             xyz[at]=[float(line[1]),float(line[2]),float(line[2])]
-          print(xyz)                        
-        f.close()
+     for m,mov in enumerate(movies):   # iterate over movies
+         print("Processing ",m,"movie: ",mov)
+         with open(mov,'r') as f:
+          geoms[m] = 1                        # comment for real run
+          for g in range(1,int(geoms[m])+1):  # iterate over geoms in each mov file
+              natoms = int(f.readline())
+              time  = f.readline().split()[6]
+              if g == 1:
+                 xyz = np.zeros(shape=(natoms,3))
+              print('g: ',g)
+              for at in range(natoms):        # iterate over atoms in each geometry
+                  line = f.readline().split()
+                  xyz[at]=[float(line[1]),float(line[2]),float(line[3])]
+              print(time,"\n",xyz)
+              i = 0
+              for l in range(0,natoms):
+                for k in range(l+1,natoms):
+                        v1, v2 = np.array(xyz[l]), np.array(xyz[k])
+                        print(l,k,v1,v2)
+              print(i)                         
+          f.close()
      dist_mat = []
      return dist_mat
     
@@ -100,7 +105,7 @@ def geoms_check(mov,lines_per_mol):   # checks the integry of movie files
 ##############################################
 
 molecule,movies,geoms=input_check()
-print("\n".join(movies),"\n",molecule,geoms)
+print("Movie::\n".join(movies),"\n","Molecule: ",molecule,"\n Geoms: ",geoms)
 print("#######################\n")
 
 distance_matrix(movies,geoms)
