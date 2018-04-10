@@ -70,7 +70,7 @@ def input_check():
     return molecule,movies,geoms
 #end input check
 
-def geoms_check(mov,lines_per_mol):   # checks the integry of movie files, fast number_of_lines_ reader, exploits limited buffer size                 
+def geoms_check(mov,lines_per_mol):   # checks the integrity of movie files, fast number_of_lines_ reader, exploits limited buffer size                 
     lines = 0
     geoms = 0
     buf_size = 1024 * 1024
@@ -82,7 +82,7 @@ def geoms_check(mov,lines_per_mol):   # checks the integry of movie files, fast 
          #\n) is left at the end of the string, and is only omitted on the last line of the file
          buf = read_f(buf_size)
       f.close()
-    if not (lines % lines_per_mol): geoms = lines / lines_per_mol
+    if not (lines % lines_per_mol): geoms = lines / lines_per_mol  # 0 FALSE
     else:
        print('Nlines is not divisible by l_p_m: ',lines, lines_per_mol)
        sys.exit(1)
@@ -137,14 +137,14 @@ def distance_matrix(xyz):
       np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
     return dist_mat
 
-# GEOMETRY ANALYSISI    
+# GEOMETRY ANALYSIS  
 def analyze_tm(dist_mat):
     #print(molecule,natoms)
     channel = 0
     
     return channel
 ##############################################
-     ##########  MAIN SEQUENCE  ##########
+     ##########  MAIN   ##########
 ##############################################
 
 molecule,movies,geoms=input_check()
