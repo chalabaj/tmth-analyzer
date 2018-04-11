@@ -143,6 +143,13 @@ def analyze_tm(dist_mat):
     channel = 0
     
     return channel
+
+# GEOMETRY ANALYSIS  
+def analyze_th(dist_mat):
+    #print(molecule,natoms)
+    channel = 0
+    
+    return channel
 ##############################################
      ##########  MAIN   ##########
 ##############################################
