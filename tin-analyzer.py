@@ -151,7 +151,7 @@ def analyze_th(dist_mat):
 def analyze_tm(dist_mat):
   """
    atom order:
-  0 Sn      
+  0    Sn      
   1    C       Sn-C  = 1,2
   2    C       Sn-C  = 1,3
   3    C       Sn-C  = 1,4
@@ -183,10 +183,53 @@ def analyze_tm(dist_mat):
   print(h_ats_on_heavies) 
    
 #2) Where are the heavy atoms 
-  for heavy_atom in range(0,5):  
-     if dist_mat[0][heavy_atom] > SnX_bond_dist
- 
-                                 
+  oh_diss = 0   # OH group diss 0/1
+  me_diss = 0   # Methyl group diss / if h_diss = 0 otherwise CH2, CH1 possible
+  
+  # Sn-O
+  if dist_mat[0][4] > SnX_bond_dist: oh_diss = oh_diss + 1
+
+  # Sn-C
+  for heavy_atom in range(1,4):  
+     if dist_mat[0][heavy_atom] > SnX_bond_dist:  me_diss = me_diss + 1
+
+  """
+  Channels:
+  0 OH diss 
+  1 1 Methyl diss
+  2 2 Methyl diss  
+  3 3 Methyl diss  
+  4 OH + Methyl diss
+  5 OH + 2 or more Methyl diss
+  6 H diss + komplex
+  7 H diss (komplex + O + H)
+  8 H diss (komplex + CH2 + H)
+  7 More than 2 diss
+  """       
+  if h_diss == 0:
+     if   oh_diss == 0:   
+          if   me_diss == 1: channel = 1 
+          elif me_diss == 2: channel = 2     
+          elif me_diss == 3: channel = 3  
+     elif oh_diss == 1:
+          if   me_diss == 0: channel = 0 
+          elif me_diss == 1: channel = 4 
+          elif me_diss == 2: channel = 5     
+          elif me_diss == 3: channel = 5
+  elif  (h_diss == 1 and me_diss == 0 and oh_diss == 0)   : channel = 6
+  elif  (h_diss == 1 and me_diss == 0 and h_ats_on_heavies[5]) == 0) : channel = 7    #H from O group  
+  elif  (h_diss == 1 and sum(h_ats_on_heavies[1:3]) != 9) : channel = 8    #H from CH group
+  
+          if   oh_diss == 0:   
+               if   me_diss == 0: channel = 6 
+               elif me_diss == 1: channel = 7     
+          elif oh_diss == 1:  channel = 7    
+     elif oh_diss == 1:
+          if   me_diss == 0: channel = 0 
+          elif me_diss == 1: channel = 4 
+          elif me_diss == 2: channel = 5     
+          elif me_diss == 3: channel = 5
+                                         
   return channel,h_diss         
            
            
