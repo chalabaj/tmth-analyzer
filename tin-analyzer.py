@@ -77,7 +77,8 @@ def geoms_check(mov,lines_per_mol):   # checks the integrity of movie files, fas
       f.close()
     if not (lines % lines_per_mol): geoms = lines / lines_per_mol  # 0 FALSE
     else:
-       print('Nlines is not divisible by l_p_m: ',lines, lines_per_mol)
+       print('Nlines is not divisible by l_p_m: ',lines, lines_per_mol, mov)
+       print('Check if there is empty line at the end of the file \n')
        sys.exit(1)
     return lines,geoms
 
@@ -89,8 +90,7 @@ def process_movies(movies,geoms):
          print("Processing ",m+1,"movie: ",mov)
          with open(mov,'r') as f:
           #geoms[m] = 5 
-          
-                  # comment for real run
+          time_channel = np.zeros(shape=(1,2))  # main array with time and reaction channel for each geometry
           for g in range(1,int(geoms[m])+1):  # iterate over geoms in each mov file, first index is inclusive, last exclusive!
               #natoms = int(f.readline())
               f.readline()                    # atoms
@@ -107,14 +107,17 @@ def process_movies(movies,geoms):
               
               dist_mat = distance_matrix(xyz)
               # Other molecules can be 
-              if molecule == "tm"   :  channel  = analyze_tm(dist_mat)
-              elif molecule == "th" :  channel  = analyze_th(dist_mat)
+              if molecule == "tm"   :  
+                channel  = analyze_tm(dist_mat)
+                np.append(arr,time,channel)
+              elif molecule == "th" :  
+                channel  = analyze_th(dist_mat)
           f.close()
     
      
 # DISTANCE MATRIX
 def distance_matrix(xyz):    
-# all combination of pairs: list(itertools.combinations(range(natoms),2)) - yet still need to loop over two-indices to call dist func
+# all combinations of pairs: list(itertools.combinations(range(natoms),2)) - yet still need to loop over two-indices to call dist func
 # create empty dist matrix - matrix is not stored for future
 # brute force number of combinations len(list((itertools.combinations(range(natoms),2))))
     dist_mat = np.zeros(shape=(natoms-1,natoms))
@@ -159,6 +162,8 @@ def analyze_tm(dist_mat):
   """
 #1) WHERE ARE HYDROGEN ATOMS
   channel = 9
+  me_diss = 0
+  oh_diss = 0
   h_diss  = 0                      # number of dissciated hydrogen atom
   h_diss_index = []                # which H atoms are dissociated
   h_bonds = []                     # list of X - H bonds to test for shortest distance 
@@ -170,7 +175,7 @@ def analyze_tm(dist_mat):
          #print(hydrogen_atom,heavy_atom," : ",dist_mat[heavy_atom][hydrogen_atom])
     
      shortest_bond = min((j,i) for i,j in enumerate(h_bonds))         # find the smallest bod and print heavy atom related to it, enumerate over heavy atoms 0 - 5
-     h_bonds.clear()  # dont need anymore now
+     h_bonds.clear()  # dont need anymore 
      
      #1a) how many hydrogens are on each heavy atom
      if shortest_bond[0] < H_diss_dist: 
@@ -179,7 +184,7 @@ def analyze_tm(dist_mat):
        h_diss = h_diss + 1 
        h_diss_index.append(shortest_bond[1])
        if h_diss >= 2: 
-         print("2 diss H, check movie: ",movies)
+         print("2 diss H CAREFULL")
   print("Sn,C,C,C,O: ",h_ats_on_heavies) 
    
 #2) Where are the heavy atoms 
@@ -193,7 +198,8 @@ def analyze_tm(dist_mat):
   for heavy_atom in range(1,4):  
      if dist_mat[0][heavy_atom] > SnX_bond_dist:  
         me_diss = me_diss + 1
-        if (oh_diss == 0 and h_ats_on_heavies[heavy_atom] != 3) : channel = 8
+        if (oh_diss == 0 and h_ats_on_heavies[heavy_atom] == 2) : channel = 8
+
   """
   Channels:
   0 OH diss 
@@ -219,9 +225,9 @@ def analyze_tm(dist_mat):
           elif me_diss == 3: channel = 5
   elif h_diss == 1:
      if (me_diss == 0 and oh_diss == 0): channel = 6
-     if (me_diss == 0 and oh_diss == 0 and h_ats_on_heavies[4] == 0) : channel = 7    #H from O group  
-  print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies')
-  print(channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
+     if (me_diss == 0 and oh_diss == 1 and h_ats_on_heavies[4] == 0) : channel = 7    #H from O group  
+  print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
+  print("----------------------------------")
   
   if channel == 9: 
     print("unknown geom or nothing happened")                                     
@@ -234,7 +240,7 @@ def analyze_tm(dist_mat):
 ##############################################
 
 molecule,movies,geoms=input_check()
-print("Movie::\n".join(movies),"\n","Molecule: ",molecule,"\n Geoms: ",geoms)
+print("Molecule: ",molecule,"\n Geoms: ",geoms)
 print("#######################\n")
 
 # create channel, statistics!!!
