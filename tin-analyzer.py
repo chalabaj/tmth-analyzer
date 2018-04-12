@@ -25,13 +25,6 @@ import itertools
 ##############################################
 ##############################################
 ##############################################
-#ConstantS - CRITERIA FOR GEOMETRY ANALYSIS 
-OH_bond_dist  = 2.000 
-OO_bond_dist  = 4.500
-CH_bond_dist  = 3.000
-HH_bond_dist  = 1.500 
-SnH_bond_dist = 3.000
-
 
 def input_check():
     global molecule,natoms   # same number and molecule for all movies and geoms
@@ -95,7 +88,7 @@ def process_movies(movies,geoms):
          #global natoms
          print("Processing ",m+1,"movie: ",mov)
          with open(mov,'r') as f:
-          geoms[m] = 5 
+          #geoms[m] = 5 
           
                   # comment for real run
           for g in range(1,int(geoms[m])+1):  # iterate over geoms in each mov file, first index is inclusive, last exclusive!
@@ -137,19 +130,67 @@ def distance_matrix(xyz):
       np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
     return dist_mat
 
+###############################################
+#ConstantS - CRITERIA FOR GEOMETRY ANALYSIS 
+H_diss_dist  =  3.000 
+OO_bond_dist  = 4.500
+CH_bond_dist  = 3.000
+HH_bond_dist  = 1.500 
+SnH_bond_dist = 3.000
+SnX_bond_dist = 5.000   # x = C or O 
+###############################################
+
 # GEOMETRY ANALYSIS  
-def analyze_tm(dist_mat):
-    #print(molecule,natoms)
+def analyze_th(dist_mat):
+#print(molecule,natoms)
     channel = 0
     
     return channel
 
 # GEOMETRY ANALYSIS  
-def analyze_th(dist_mat):
-    #print(molecule,natoms)
-    channel = 0
+def analyze_tm(dist_mat):
+  """
+   atom order:
+  0 Sn      
+  1    C       Sn-C  = 1,2
+  2    C       Sn-C  = 1,3
+  3    C       Sn-C  = 1,4
+  4    O       Sn-O  = 1,5
+  5-14 H
+  """
+#1) WHERE ARE HYDROGEN ATOMS
+  h_diss  = 0                      # number of dissciated hydrogen atom
+  h_diss_index = []                # which H atoms are dissociated
+  h_bonds = []                     # list of X - H bonds to test for shortest distance 
+  h_ats_on_heavies = [0,0,0,0,0]   # how many H atoms are on each heavy atom
+  
+  for hydrogen_atom in range(5,natoms):
+     for heavy_atom in range(0,5):                      #  last index excluded, upper diagonal l matrix, first index < second one
+         h_bonds.append(dist_mat[heavy_atom][hydrogen_atom])
+         print(hydrogen_atom,heavy_atom," : ",dist_mat[heavy_atom][hydrogen_atom])
     
-    return channel
+     shortest_bond = min((j,i) for i,j in enumerate(h_bonds))         # find the smallest bod and print heavy atom related to it, enumerate over heavy atoms 0 - 5
+     h_bonds.clear()  # dont need anymore now
+     
+     #1a) how many hydrogens are on each heavy atom
+     if shortest_bond[0] < H_diss_dist: 
+       h_ats_on_heavies[shortest_bond[1]] = h_ats_on_heavies[shortest_bond[1]] + 1
+     else : 
+       h_diss = h_diss + 1 
+       h_diss_index.append(shortest_bond[1])
+       if h_diss >= 2: 
+         print("2 diss H, check movie: ",movies)
+  print(h_ats_on_heavies) 
+   
+#2) Where are the heavy atoms 
+  for heavy_atom in range(0,5):  
+     if dist_mat[0][heavy_atom] > SnX_bond_dist
+ 
+                                 
+  return channel,h_diss         
+           
+           
+            
 ##############################################
      ##########  MAIN   ##########
 ##############################################
