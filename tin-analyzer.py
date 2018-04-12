@@ -99,6 +99,7 @@ def process_movies(movies,geoms):
                  xyz = np.zeros(shape=(natoms,3))
                  if os.path.isfile(os.path.join(os.getcwd(),'dist_mat.dat')): os.remove('dist_mat.dat')     
               print('geometry: ',g)
+
               for at in range(0,natoms):        # iterate over atoms in each geometry
                   line = f.readline().split()
                   xyz[at]=[float(line[1]),float(line[2]),float(line[3])]
@@ -108,8 +109,6 @@ def process_movies(movies,geoms):
               # Other molecules can be 
               if molecule == "tm"   :  channel  = analyze_tm(dist_mat)
               elif molecule == "th" :  channel  = analyze_th(dist_mat)
-              
-              print("channel: ",channel)
           f.close()
     
      
@@ -159,6 +158,7 @@ def analyze_tm(dist_mat):
   5-14 H
   """
 #1) WHERE ARE HYDROGEN ATOMS
+  channel = 9
   h_diss  = 0                      # number of dissciated hydrogen atom
   h_diss_index = []                # which H atoms are dissociated
   h_bonds = []                     # list of X - H bonds to test for shortest distance 
@@ -167,7 +167,7 @@ def analyze_tm(dist_mat):
   for hydrogen_atom in range(5,natoms):
      for heavy_atom in range(0,5):                      #  last index excluded, upper diagonal l matrix, first index < second one
          h_bonds.append(dist_mat[heavy_atom][hydrogen_atom])
-         print(hydrogen_atom,heavy_atom," : ",dist_mat[heavy_atom][hydrogen_atom])
+         #print(hydrogen_atom,heavy_atom," : ",dist_mat[heavy_atom][hydrogen_atom])
     
      shortest_bond = min((j,i) for i,j in enumerate(h_bonds))         # find the smallest bod and print heavy atom related to it, enumerate over heavy atoms 0 - 5
      h_bonds.clear()  # dont need anymore now
@@ -180,7 +180,7 @@ def analyze_tm(dist_mat):
        h_diss_index.append(shortest_bond[1])
        if h_diss >= 2: 
          print("2 diss H, check movie: ",movies)
-  print(h_ats_on_heavies) 
+  print("Sn,C,C,C,O: ",h_ats_on_heavies) 
    
 #2) Where are the heavy atoms 
   oh_diss = 0   # OH group diss 0/1
@@ -188,11 +188,12 @@ def analyze_tm(dist_mat):
   
   # Sn-O
   if dist_mat[0][4] > SnX_bond_dist: oh_diss = oh_diss + 1
-
+     
   # Sn-C
   for heavy_atom in range(1,4):  
-     if dist_mat[0][heavy_atom] > SnX_bond_dist:  me_diss = me_diss + 1
-
+     if dist_mat[0][heavy_atom] > SnX_bond_dist:  
+        me_diss = me_diss + 1
+        if (oh_diss == 0 and h_ats_on_heavies[heavy_atom] != 3) : channel = 8
   """
   Channels:
   0 OH diss 
@@ -204,7 +205,7 @@ def analyze_tm(dist_mat):
   6 H diss + komplex
   7 H diss (komplex + O + H)
   8 H diss (komplex + CH2 + H)
-  7 More than 2 diss
+  9 nothing happened
   """       
   if h_diss == 0:
      if   oh_diss == 0:   
@@ -216,20 +217,14 @@ def analyze_tm(dist_mat):
           elif me_diss == 1: channel = 4 
           elif me_diss == 2: channel = 5     
           elif me_diss == 3: channel = 5
-  elif  (h_diss == 1 and me_diss == 0 and oh_diss == 0)   : channel = 6
-  elif  (h_diss == 1 and me_diss == 0 and h_ats_on_heavies[5]) == 0) : channel = 7    #H from O group  
-  elif  (h_diss == 1 and sum(h_ats_on_heavies[1:3]) != 9) : channel = 8    #H from CH group
+  elif h_diss == 1:
+     if (me_diss == 0 and oh_diss == 0): channel = 6
+     if (me_diss == 0 and oh_diss == 0 and h_ats_on_heavies[4] == 0) : channel = 7    #H from O group  
+  print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies')
+  print(channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
   
-          if   oh_diss == 0:   
-               if   me_diss == 0: channel = 6 
-               elif me_diss == 1: channel = 7     
-          elif oh_diss == 1:  channel = 7    
-     elif oh_diss == 1:
-          if   me_diss == 0: channel = 0 
-          elif me_diss == 1: channel = 4 
-          elif me_diss == 2: channel = 5     
-          elif me_diss == 3: channel = 5
-                                         
+  if channel == 9: 
+    print("unknown geom or nothing happened")                                     
   return channel,h_diss         
            
            
