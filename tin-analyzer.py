@@ -84,36 +84,34 @@ def geoms_check(mov,lines_per_mol):   # checks the integrity of movie files, fas
 
 # MAIN ROUTINE TO GO THROUGH EACH MOVIE - READ XYZ, CALCULATE DISTANCE, ANALYZE GEOMETRY
 def process_movies(movies,geoms):
-
+     analyzed_geoms = np.array([[0, 0]])
      for m,mov in enumerate(movies):   # iterate over movies
          #global natoms
          print("Processing ",m+1,"movie: ",mov)
          with open(mov,'r') as f:
-          #geoms[m] = 5 
-          time_channel = np.zeros(shape=(1,2))  # main array with time and reaction channel for each geometry
-          for g in range(1,int(geoms[m])+1):  # iterate over geoms in each mov file, first index is inclusive, last exclusive!
+                                       # main array with time and reaction channel for each geometry
+          for g in range(1,int(geoms[m])+1):                                 # iterate over geoms in each mov file, first index is inclusive, last exclusive!
               #natoms = int(f.readline())
-              f.readline()                    # atoms
-              time   = f.readline().split()[6] # comment + time
+              atoms = f.readline()                                                   # atoms
+              timestep = f.readline().split()[2]                                 # comment + time
               if g == 1:
                  xyz = np.zeros(shape=(natoms,3))
                  if os.path.isfile(os.path.join(os.getcwd(),'dist_mat.dat')): os.remove('dist_mat.dat')     
               print('geometry: ',g)
 
-              for at in range(0,natoms):        # iterate over atoms in each geometry
+              for at in range(0,natoms):                                      # iterate over atoms in each geometry
                   line = f.readline().split()
                   xyz[at]=[float(line[1]),float(line[2]),float(line[3])]
               #print(time,"\n",xyz)
               
-              dist_mat = distance_matrix(xyz)
-              # Other molecules can be 
-              if molecule == "tm"   :  
-                channel  = analyze_tm(dist_mat)
-                np.append(arr,time,channel)
-              elif molecule == "th" :  
-                channel  = analyze_th(dist_mat)
+              dist_mat = distance_matrix(xyz)                                 #cal dist matrix
+              if   molecule == "tm"  : channel  = analyze_tm(dist_mat)[0]         # analyze geometry
+              elif molecule == "th"  : channel  = analyze_th(dist_mat)[0] 
+                               # save analyzed dat for statistics
+                               
+              analyzed_geoms = np.append(analyzed_geoms, [[int(timestep),int(channel)]], axis = 0)
           f.close()
-    
+     return(analyzed_geoms)
      
 # DISTANCE MATRIX
 def distance_matrix(xyz):    
@@ -233,7 +231,11 @@ def analyze_tm(dist_mat):
     print("unknown geom or nothing happened")                                     
   return channel,h_diss         
            
-           
+def channel_statistics(analyze_geoms):
+    nstep = 2100      # number of simulation steps
+    timestep = 10     # au
+    #for t in range(1,2101,1):
+    # print(t)       
             
 ##############################################
      ##########  MAIN   ##########
@@ -243,10 +245,9 @@ molecule,movies,geoms=input_check()
 print("Molecule: ",molecule,"\n Geoms: ",geoms)
 print("#######################\n")
 
-# create channel, statistics!!!
-channel = process_movies(movies,geoms)   # np.array returned as upper diagonal matrix
-
-
+analyze_geoms  = process_movies(movies,geoms)   # np.array returning time, channel over all geoms
+print(analyze_geoms)
+statistic      = channel_statistics(analyze_geoms)
 
 
 
