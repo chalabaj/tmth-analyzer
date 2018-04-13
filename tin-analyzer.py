@@ -238,8 +238,7 @@ def analyze_tm(dist_mat):
   #print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
   #print("----------------------------------")
   
-  if channel == 9: 
-    print("unknown geom or nothing happened")                                     
+  #if channel == 9:  print("unknown geom or nothing happened")                                     
   return channel,h_diss         
            
 def channel_statistics(analyze_geoms):
@@ -255,8 +254,8 @@ def channel_statistics(analyze_geoms):
  
     channel_pop = np.zeros(shape=(n_steps,n_channels))   # 2D array, 0 column time, rest {1,n_channel} are channels
     #totpop     = np.zeros(shape=(n_steps))             # no need to store totpop in eacxh step
-    print(len(analyze_geoms))
-    for rec in range(0,len(analyze_geoms)):
+    print("Total number of geoms: ",len(analyze_geoms))
+    for rec in range(1,len(analyze_geoms)):             # first row is 0,0 entry from array init
      # print(analyze_geoms[rec][1])
       channel = int(analyze_geoms[rec][1])
       step    = int(analyze_geoms[rec][0])
@@ -268,7 +267,8 @@ def channel_statistics(analyze_geoms):
         totpop = sum(channel_pop[step])
         for chan in range(0,n_channels):
             channel_pop[step][chan] = (channel_pop[step][chan]/totpop) * procentual 
-        #print(step,channel_pop[step],totpop[step])
+        print(step,time,channel_pop[step],totpop)
+        
 ##############################################
      ##########  MAIN   ##########
 ##############################################
