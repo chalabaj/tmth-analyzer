@@ -26,6 +26,8 @@ import itertools
 ##############################################
 ##############################################
 
+np.set_printoptions(linewidth  = 150)  # avoid text wrapping in console when printing np.array for checks
+
 def input_check():
     global molecule,natoms   # same number and molecule for all movies and geoms
     movies  = []
@@ -84,16 +86,21 @@ def geoms_check(mov,lines_per_mol):   # checks the integrity of movie files, fas
 
 # MAIN ROUTINE TO GO THROUGH EACH MOVIE - READ XYZ, CALCULATE DISTANCE, ANALYZE GEOMETRY
 def process_movies(movies,geoms):
+     """
+     Expecting .xyz file 
+     first line = natoms
+     second line = comment + time/timestep information, might require change in timestep assingment split index []
+     """
      analyzed_geoms = np.array([[0, 0]])
      for m,mov in enumerate(movies):   # iterate over movies
          #global natoms
          print("Processing ",m+1,"movie: ",mov)
          with open(mov,'r') as f:
                                        # main array with time and reaction channel for each geometry
-          for g in range(1,int(geoms[m])+1):                                 # iterate over geoms in each mov file, first index is inclusive, last exclusive!
+          for g in range(1,int(geoms[m])+1):                                     # iterate over geoms in each mov file, first index is inclusive, last exclusive!
               #natoms = int(f.readline())
-              atoms = f.readline()                                                   # atoms
-              timestep = f.readline().split()[2]                                 # comment + time
+              atoms = f.readline()                                               # atoms
+              timestep = f.readline().split()[2]                                 # comment + time 
               if g == 1:
                  xyz = np.zeros(shape=(natoms,3))
                  if os.path.isfile(os.path.join(os.getcwd(),'dist_mat.dat')): os.remove('dist_mat.dat')     
@@ -119,7 +126,6 @@ def distance_matrix(xyz):
 # create empty dist matrix - matrix is not stored for future
 # brute force number of combinations len(list((itertools.combinations(range(natoms),2))))
     dist_mat = np.zeros(shape=(natoms-1,natoms))
-    #print(dist_mat)
     for k in range(0,natoms):
           for l in range(k+1,natoms):
                 v1, v2 = np.array(xyz[k]), np.array(xyz[l])
@@ -127,7 +133,7 @@ def distance_matrix(xyz):
                 dist_mat[k][l] = math.sqrt(sum(dist))
                 # print(v1,v2,l,k) # combination check
    # with open('dist_mat.dat','a') as file_dist_save:  # save dist_mat in file for check if needed
-   #   np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
+   # np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
     return dist_mat
 
 ###############################################
@@ -235,15 +241,15 @@ def analyze_tm(dist_mat):
            
 def channel_statistics(analyze_geoms):
     """
-    MODIFIE FOR EACH TYPE OF MOLECULE (n_channels)
-    nstep depends on simulation number of steps (e.g. nsteps in input.in)
+    MODIFIE PARAMETERS FOR EACH TYPE OF MOLECULE (n_channels)
+    nstep, timestep depends on simulation number of steps (e.g. nsteps in input.in)
     """
     AU_TO_FS   = 0.02418884254
     n_channels = 9
-    n_steps    = 2100   # number of simulation steps, 
-    timestep   = 10     # au
-    procentual = 1      # 0 - 1 or 0-100
-    
+    n_steps    = 2100 + 1  # number of simulation steps, +1 since upper limit index is exluded
+    timestep   = 10        # 
+    procentual = 1         # 0 - 1 or 0-100
+ 
     channel_pop = np.zeros(shape=(n_steps,n_channels))   # 2D array, 0 column time, rest {1,n_channel} are channels
     totpop      = np.zeros(shape=(n_steps))
     print(len(analyze_geoms))
@@ -255,12 +261,11 @@ def channel_statistics(analyze_geoms):
       channel_pop[step][channel] = channel_pop[step][channel] + 1 
     # channel_pop[channel][step]=channel_pop(channel,step)+1 
     # print(t)  
-    for step in range(1,n_steps+1):   # +1 since upper limit index is exluded
+    for step in range(1,n_steps):    
+        totpop[step] = sum(channel_pop[step])
         for chan in range(0,n_channels):
-            totpop[step] = sum(channel_pop[step])
-            print(step,totpop[step])
-            channel_pop[step][channel] = channel_pop[step][channel]/totpop[step]*procentual ! print %
-           
+            channel_pop[step][chan] = channel_pop[step][chan]/totpop[step]*procentual 
+        print(step,channel_pop[step],totpop[step])
 ##############################################
      ##########  MAIN   ##########
 ##############################################
