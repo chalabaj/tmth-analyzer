@@ -171,7 +171,7 @@ def analyze_tm(dist_mat):
   """
 #1) WHERE ARE HYDROGEN ATOMS
 
-  channel = 9
+  channel = 0
   me_diss = 0
   oh_diss = 0
   h_diss  = 0                      # number of dissciated hydrogen atom
@@ -215,22 +215,22 @@ def analyze_tm(dist_mat):
   Channels:
   0 nothing happened
   1 1 Methyl diss
-  2 2 Methyl diss  
-  3 3 Methyl diss  
+  2 1 OH diss 
+  3 2 Methyl diss  
   4 OH + Methyl diss
   5 OH + 2 or more Methyl diss
   6 H diss + komplex
   7 H diss (komplex + O + H)
   8 H diss (komplex + CH2 + H)
-  9 OH diss
+  9 3 Methyl diss
   """       
   if h_diss == 0:
      if   oh_diss == 0:   
           if   me_diss == 1: channel = 1 
-          elif me_diss == 2: channel = 2     
-          elif me_diss == 3: channel = 3  
+          elif me_diss == 2: channel = 3     
+          elif me_diss == 3: channel = 9  
      elif oh_diss == 1:
-          if   me_diss == 0: channel = 9 
+          if   me_diss == 0: channel = 2 
           elif me_diss == 1: channel = 4 
           elif me_diss == 2: channel = 5     
           elif me_diss == 3: channel = 5
@@ -267,7 +267,7 @@ def channel_statistics(analyze_geoms):
         time    = (step * timestep) * AU_TO_FS
         for chan in range(0,n_channels):
             channel_pop[step][chan] = (channel_pop[step][chan]/totpop) * procentual         
-        line = ( str('%.4f ' %time) + ("  ".join("%.3f" %n for n in channel_pop[step])))
+        line = ( str('%.4f ' %time) + ("  ".join("%.3f" %n for n in channel_pop[step])) + "\n")
         
         #WRITE EACH LINE
         with open(results_file, 'a') as res_file:
