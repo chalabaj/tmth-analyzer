@@ -86,13 +86,13 @@ def geoms_check(mov,lines_per_mol):   # checks the integrity of movie files, fas
 
 # MAIN ROUTINE TO GO THROUGH EACH MOVIE - READ XYZ, CALCULATE DISTANCE, ANALYZE GEOMETRY
 def process_movies(movies,geoms):
-     """
+    """
      Expecting .xyz file 
      first line = natoms
      second line = comment + time/timestep information, might require change in timestep assingment split index []
-     """
-     analyzed_geoms = np.array([[0, 0]])
-     for m,mov in enumerate(movies):   # iterate over movies
+    """
+    analyzed_geoms = np.array([[0, 0]])
+    for m,mov in enumerate(movies):   # iterate over movies
          #global natoms
          print("Processing ",m+1,"movie: ",mov)
          with open(mov,'r') as f:
@@ -111,14 +111,16 @@ def process_movies(movies,geoms):
                   xyz[at]=[float(line[1]),float(line[2]),float(line[3])]
               #print(time,"\n",xyz)
               
-              dist_mat = distance_matrix(xyz)                                 #cal dist matrix
+              dist_mat = distance_matrix(xyz)                                     #cal dist matrix
+              
+              ##### MODIFIE HERE FOR SPECIFIC MOLECULE: #####
               if   molecule == "tm"  : channel  = analyze_tm(dist_mat)[0]         # analyze geometry
               elif molecule == "th"  : channel  = analyze_th(dist_mat)[0] 
-                               # save analyzed dat for statistics
-                               
-              analyzed_geoms = np.append(analyzed_geoms, [[int(timestep),int(channel)]], axis = 0)
+                                            
+              analyzed_geoms = np.append(analyzed_geoms, [[int(timestep),int(channel)]], axis = 0)  # save analyzed data for statistics
           f.close()
-     return(analyzed_geoms)
+          
+    return(analyzed_geoms)
      
 # DISTANCE MATRIX
 def distance_matrix(xyz):    
