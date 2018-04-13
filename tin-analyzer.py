@@ -193,7 +193,7 @@ def analyze_tm(dist_mat):
        h_diss_index.append(shortest_bond[1])
        if h_diss >= 2: 
          print("2 diss H CAREFULL")
-  print("Sn,C,C,C,O: ",h_ats_on_heavies) 
+  #print("Sn,C,C,C,O: ",h_ats_on_heavies) 
    
 #2) Where are the heavy atoms 
   oh_diss = 0   # OH group diss 0/1
@@ -211,7 +211,7 @@ def analyze_tm(dist_mat):
 
   """
   Channels:
-  0 OH diss 
+  0 nothing happened
   1 1 Methyl diss
   2 2 Methyl diss  
   3 3 Methyl diss  
@@ -220,7 +220,7 @@ def analyze_tm(dist_mat):
   6 H diss + komplex
   7 H diss (komplex + O + H)
   8 H diss (komplex + CH2 + H)
-  9 nothing happened
+  9 OH diss
   """       
   if h_diss == 0:
      if   oh_diss == 0:   
@@ -228,14 +228,14 @@ def analyze_tm(dist_mat):
           elif me_diss == 2: channel = 2     
           elif me_diss == 3: channel = 3  
      elif oh_diss == 1:
-          if   me_diss == 0: channel = 0 
+          if   me_diss == 0: channel = 9 
           elif me_diss == 1: channel = 4 
           elif me_diss == 2: channel = 5     
           elif me_diss == 3: channel = 5
   elif h_diss == 1:
      if (me_diss == 0 and oh_diss == 0): channel = 6
      if (me_diss == 0 and oh_diss == 1 and h_ats_on_heavies[4] == 0) : channel = 7    #H from O group  
-  print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
+  #print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
   print("----------------------------------")
   
   if channel == 9: 
@@ -248,7 +248,7 @@ def channel_statistics(analyze_geoms):
     nstep, timestep depends on simulation number of steps (e.g. nsteps in input.in)
     """
     AU_TO_FS   = 0.02418884254
-    n_channels = 9
+    n_channels = 10
     n_steps    = 2100 + 1  # number of simulation steps, +1 since upper limit index is exluded
     timestep   = 10        # 
     procentual = 1         # 0 - 1 or 0-100
