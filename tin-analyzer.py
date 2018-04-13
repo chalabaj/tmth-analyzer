@@ -30,18 +30,19 @@ import csv
 np.set_printoptions(linewidth  = 150)  # avoid text wrapping in console when printing np.array for checks
 
 def input_check():
+    global molecule,natoms,results_file   # same number and molecule for all movies and geoms
     if len(sys.argv) < 3:
      print("Error: not enought parameters.\nUsage: python ",sys.argv[0]," th/tm/molecule movie.xyz movie2.xyz....")
      sys.exit(1)
-    global molecule,natoms,results_file   # same number and molecule for all movies and geoms
-    
+
     movies  = []
     lines   = []
     geoms   = []
     molecule     = sys.argv[1]   # TMTH or THMS
     movs         = sys.argv[3:]  # list of movies to process
-    results_file = sys.argv[2]  # file used for saving final data (time,population, tot_pop)
-    # IF NEW MOLECULE ADDER, EXTEND HERE NEW PARAMETERS
+    results_file = sys.argv[2]   # file used for saving final data
+    
+    ##### MODIFIE HERE FOR SPECIFIC MOLECULE: #####
     if molecule == "tm":
        lines_per_mol = 17
        natoms = 15
@@ -69,7 +70,7 @@ def input_check():
     return molecule,movies,geoms
 #end input check
 
-def geoms_check(mov,lines_per_mol):   # checks the integrity of movie files, fast number_of_lines_ reader, exploits limited buffer size                 
+def geoms_check(mov,lines_per_mol):   # fast number_of_lines_ reader exploiting limited buffer                 
     lines = 0
     geoms = 0
     buf_size = 1024 * 1024
@@ -95,12 +96,11 @@ def process_movies(movies,geoms):
      first line = natoms
      second line = comment + time/timestep information, might require change in timestep assingment split index []
     """
-    analyzed_geoms = np.array([[0, 0]])
-    for m,mov in enumerate(movies):   # iterate over movies
-         #global natoms
+    analyzed_geoms = np.array([[0, 0]])                                          # main array with time and reaction channel for each geometry
+    for m,mov in enumerate(movies):                                              # iterate over movies
          print("Processing ",m+1,"movie: ",mov)
          with open(mov,'r') as f:
-                                       # main array with time and reaction channel for each geometry
+                                       
           for g in range(1,int(geoms[m])+1):                                     # iterate over geoms in each mov file, first index is inclusive, last exclusive!
               #natoms = int(f.readline())
               atoms = f.readline()                                               # atoms
@@ -110,15 +110,15 @@ def process_movies(movies,geoms):
                  if os.path.isfile(os.path.join(os.getcwd(),'dist_mat.dat')): os.remove('dist_mat.dat')     
               #print('geometry: ',g)
 
-              for at in range(0,natoms):                                      # iterate over atoms in each geometry
+              for at in range(0,natoms):                                         # iterate over atoms in each geometry
                   line = f.readline().split()
                   xyz[at]=[float(line[1]),float(line[2]),float(line[3])]
               #print(time,"\n",xyz)
               
-              dist_mat = distance_matrix(xyz)                                     #cal dist matrix
+              dist_mat = distance_matrix(xyz)                                    #cal dist matrix
               
               ##### MODIFIE HERE FOR SPECIFIC MOLECULE: #####
-              if   molecule == "tm"  : channel  = analyze_tm(dist_mat)[0]         # analyze geometry
+              if   molecule == "tm"  : channel  = analyze_tm(dist_mat)[0]        # analyze geometry
               elif molecule == "th"  : channel  = analyze_th(dist_mat)[0] 
                                             
               analyzed_geoms = np.append(analyzed_geoms, [[int(timestep),int(channel)]], axis = 0)  # save analyzed data for statistics
@@ -128,18 +128,17 @@ def process_movies(movies,geoms):
      
 # DISTANCE MATRIX
 def distance_matrix(xyz):    
-# all combinations of pairs: list(itertools.combinations(range(natoms),2)) - yet still need to loop over two-indices to call dist func
-# create empty dist matrix - matrix is not stored for future
-# brute force number of combinations len(list((itertools.combinations(range(natoms),2))))
-    dist_mat = np.zeros(shape=(natoms-1,natoms))
+# all combinations of pairs: list(itertools.combinations(range(natoms),2)) - yet still need to loop over two-indices to call dist func brute force number of combinations len(<-)
+# with open('dist_mat.dat','a') as file_dist_save:  # save dist_mat in file for check if needed
+# np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
+    dist_mat = np.zeros(shape=(natoms-1,natoms)) # create empty dist matrix - matrix is not stored for future
     for k in range(0,natoms):
           for l in range(k+1,natoms):
                 v1, v2 = np.array(xyz[k]), np.array(xyz[l])
                 dist = [(a - b)**2 for a, b in zip(v1, v2)]
                 dist_mat[k][l] = math.sqrt(sum(dist))
                 # print(v1,v2,l,k) # combination check
-   # with open('dist_mat.dat','a') as file_dist_save:  # save dist_mat in file for check if needed
-   # np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
+
     return dist_mat
 
 ###############################################
@@ -162,7 +161,7 @@ def analyze_th(dist_mat):
 # GEOMETRY ANALYSIS  
 def analyze_tm(dist_mat):
   """
-   atom order:
+  atom order:
   0    Sn      
   1    C       Sn-C  = 1,2
   2    C       Sn-C  = 1,3
@@ -181,11 +180,11 @@ def analyze_tm(dist_mat):
   h_ats_on_heavies = [0,0,0,0,0]   # how many H atoms are on each heavy atom
   
   for hydrogen_atom in range(5,natoms):
-     for heavy_atom in range(0,5):                      #  last index excluded, upper diagonal l matrix, first index < second one
+     for heavy_atom in range(0,5):                                    #  last index excluded, upper diagonal l matrix, first index < second one
          h_bonds.append(dist_mat[heavy_atom][hydrogen_atom])
          #print(hydrogen_atom,heavy_atom," : ",dist_mat[heavy_atom][hydrogen_atom])
     
-     shortest_bond = min((j,i) for i,j in enumerate(h_bonds))         # find the smallest bod and print heavy atom related to it, enumerate over heavy atoms 0 - 5
+     shortest_bond = min((j,i) for i,j in enumerate(h_bonds))         #  find the smallest bod and print heavy atom related to it, enumerate over heavy atoms 0 - 5
      h_bonds.clear()  # dont need anymore 
      
      #1a) how many hydrogens are on each heavy atom
@@ -256,9 +255,9 @@ def channel_statistics(analyze_geoms):
     procentual = 1         # 0 - 1 or 0-100
  
     channel_pop = np.zeros(shape=(n_steps,n_channels))   # 2D array, 0 column time, rest {1,n_channel} are channels
-    #totpop     = np.zeros(shape=(n_steps))             # no need to store totpop in eacxh step
+    #totpop     = np.zeros(shape=(n_steps))              # no need to store totpop in each step
     print("Total number of geoms: ",len(analyze_geoms)-1)
-    for rec in range(1,len(analyze_geoms)):             # first row is 0,0 entry from array init
+    for rec in range(1,len(analyze_geoms)):              # first row is 0,0 entry from array init
       channel = int(analyze_geoms[rec][1])
       step    = int(analyze_geoms[rec][0])
       time    = (step * timestep) * AU_TO_FS
@@ -267,11 +266,11 @@ def channel_statistics(analyze_geoms):
         totpop = sum(channel_pop[step])
         time    = (step * timestep) * AU_TO_FS
         for chan in range(0,n_channels):
-            channel_pop[step][chan] = (channel_pop[step][chan]/totpop) * procentual 
-            #ch=("%s" % " ".join(str(list(channel_pop[step]))))
-        
+            channel_pop[step][chan] = (channel_pop[step][chan]/totpop) * procentual         
         line = ( str('%.4f ' %time) + ("  ".join("%.3f" %n for n in channel_pop[step])))
-        with open(results_file, 'w') as res_file:
+        
+        #WRITE EACH LINE
+        with open(results_file, 'a') as res_file:
          res_file.write(line)
          res_file.close()
           
