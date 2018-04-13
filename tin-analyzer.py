@@ -32,12 +32,14 @@ def input_check():
     if len(sys.argv) < 3:
      print("Error: not enought parameters.\nUsage: python ",sys.argv[0]," th/tm/molecule movie.xyz movie2.xyz....")
      sys.exit(1)
-    global molecule,natoms   # same number and molecule for all movies and geoms
+    global molecule,natoms,results_file   # same number and molecule for all movies and geoms
+    
     movies  = []
     lines   = []
     geoms   = []
-    molecule = sys.argv[1]   # TMTH or THMS
-    movs = sys.argv[2:]      # list of movies to process
+    molecule     = sys.argv[1]   # TMTH or THMS
+    movs         = sys.argv[3:]  # list of movies to process
+    results_file = sys.argv[2]  # file used for saving final data (time,population, tot_pop)
     # IF NEW MOLECULE ADDER, EXTEND HERE NEW PARAMETERS
     if molecule == "tm":
        lines_per_mol = 17
@@ -267,8 +269,14 @@ def channel_statistics(analyze_geoms):
         totpop = sum(channel_pop[step])
         for chan in range(0,n_channels):
             channel_pop[step][chan] = (channel_pop[step][chan]/totpop) * procentual 
-        print(step,time,channel_pop[step],totpop)
-        
+            
+        ch=("%s" % " ".join(str(list(channel_pop[step]))))
+        print(step,time,ch,totpop)
+    
+    with open(results_file, 'w') as res_file:
+     res_file.writeline(step,time,ch,totpop)
+     res_file.close()
+       
 ##############################################
      ##########  MAIN   ##########
 ##############################################
