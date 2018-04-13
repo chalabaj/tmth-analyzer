@@ -22,6 +22,7 @@ import os
 import subprocess
 import string
 import itertools
+import csv
 ##############################################
 ##############################################
 ##############################################
@@ -248,7 +249,7 @@ def channel_statistics(analyze_geoms):
     MODIFIE PARAMETERS FOR EACH TYPE OF MOLECULE (n_channels)
     nstep, timestep depends on simulation number of steps (e.g. nsteps in input.in)
     """
-    AU_TO_FS   = 0.02418884254
+    AU_TO_FS   = 0.024189
     n_channels = 10
     n_steps    = 2100 + 1  # number of simulation steps, +1 since upper limit index is exluded
     timestep   = 10        # 
@@ -267,16 +268,16 @@ def channel_statistics(analyze_geoms):
     # print(t)  
     for step in range(1,n_steps):    
         totpop = sum(channel_pop[step])
+        time    = (step * timestep) * AU_TO_FS
         for chan in range(0,n_channels):
             channel_pop[step][chan] = (channel_pop[step][chan]/totpop) * procentual 
-            
-        ch=("%s" % " ".join(str(list(channel_pop[step]))))
-        print(step,time,ch,totpop)
-    
-    with open(results_file, 'w') as res_file:
-     res_file.writeline(step,time,ch,totpop)
-     res_file.close()
-       
+            #ch=("%s" % " ".join(str(list(channel_pop[step]))))
+        #print(time,allchan,totpop)
+        print( str(time) + ("  ".join("%f"%n for n in channel_pop[step])))
+        with open(results_file, 'w') as res_file:
+ 
+         res_file.close()
+          
 ##############################################
      ##########  MAIN   ##########
 ##############################################
