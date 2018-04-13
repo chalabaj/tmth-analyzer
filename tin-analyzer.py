@@ -29,6 +29,9 @@ import itertools
 np.set_printoptions(linewidth  = 150)  # avoid text wrapping in console when printing np.array for checks
 
 def input_check():
+    if len(sys.argv) < 3:
+     print("Error: not enought parameters.\nUsage: python ",sys.argv[0]," th/tm/molecule movie.xyz movie2.xyz....")
+     sys.exit(1)
     global molecule,natoms   # same number and molecule for all movies and geoms
     movies  = []
     lines   = []
@@ -42,9 +45,7 @@ def input_check():
     elif molecule == "th":
        lines_per_mol = 13
        natoms = 11
-    else:
-       print('Wrong system (tm/th), received:  ', molecule)
-       sys.exit(1)
+    else: sys.exit("Wrong system (tm/th)")
        
     print('Number of movie files requested:', len(sys.argv)-2)
 
@@ -253,7 +254,7 @@ def channel_statistics(analyze_geoms):
     procentual = 1         # 0 - 1 or 0-100
  
     channel_pop = np.zeros(shape=(n_steps,n_channels))   # 2D array, 0 column time, rest {1,n_channel} are channels
-    totpop      = np.zeros(shape=(n_steps))
+    #totpop     = np.zeros(shape=(n_steps))             # no need to store totpop in eacxh step
     print(len(analyze_geoms))
     for rec in range(0,len(analyze_geoms)):
      # print(analyze_geoms[rec][1])
@@ -264,10 +265,10 @@ def channel_statistics(analyze_geoms):
     # channel_pop[channel][step]=channel_pop(channel,step)+1 
     # print(t)  
     for step in range(1,n_steps):    
-        totpop[step] = sum(channel_pop[step])
+        totpop = sum(channel_pop[step])
         for chan in range(0,n_channels):
-            channel_pop[step][chan] = channel_pop[step][chan]/totpop[step]*procentual 
-        print(step,channel_pop[step],totpop[step])
+            channel_pop[step][chan] = (channel_pop[step][chan]/totpop) * procentual 
+        #print(step,channel_pop[step],totpop[step])
 ##############################################
      ##########  MAIN   ##########
 ##############################################
