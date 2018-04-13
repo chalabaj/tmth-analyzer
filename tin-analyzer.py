@@ -105,7 +105,7 @@ def process_movies(movies,geoms):
               if g == 1:
                  xyz = np.zeros(shape=(natoms,3))
                  if os.path.isfile(os.path.join(os.getcwd(),'dist_mat.dat')): os.remove('dist_mat.dat')     
-              print('geometry: ',g)
+              #print('geometry: ',g)
 
               for at in range(0,natoms):                                      # iterate over atoms in each geometry
                   line = f.readline().split()
@@ -236,7 +236,7 @@ def analyze_tm(dist_mat):
      if (me_diss == 0 and oh_diss == 0): channel = 6
      if (me_diss == 0 and oh_diss == 1 and h_ats_on_heavies[4] == 0) : channel = 7    #H from O group  
   #print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
-  print("----------------------------------")
+  #print("----------------------------------")
   
   if channel == 9: 
     print("unknown geom or nothing happened")                                     
