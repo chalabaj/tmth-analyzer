@@ -126,8 +126,8 @@ def distance_matrix(xyz):
                 dist = [(a - b)**2 for a, b in zip(v1, v2)]
                 dist_mat[k][l] = math.sqrt(sum(dist))
                 # print(v1,v2,l,k) # combination check
-    with open('dist_mat.dat','a') as file_dist_save:  # save dist_mat in file for check if needed
-      np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
+   # with open('dist_mat.dat','a') as file_dist_save:  # save dist_mat in file for check if needed
+   #   np.savetxt(file_dist_save, dist_mat, newline='\n', fmt='%.8e',footer =" ")
     return dist_mat
 
 ###############################################
@@ -159,6 +159,7 @@ def analyze_tm(dist_mat):
   5-14 H
   """
 #1) WHERE ARE HYDROGEN ATOMS
+
   channel = 9
   me_diss = 0
   oh_diss = 0
@@ -198,6 +199,7 @@ def analyze_tm(dist_mat):
         me_diss = me_diss + 1
         if (oh_diss == 0 and h_ats_on_heavies[heavy_atom] == 2) : channel = 8
 
+
   """
   Channels:
   0 OH diss 
@@ -232,11 +234,33 @@ def analyze_tm(dist_mat):
   return channel,h_diss         
            
 def channel_statistics(analyze_geoms):
-    nstep = 2100      # number of simulation steps
-    timestep = 10     # au
-    #for t in range(1,2101,1):
-    # print(t)       
-            
+    """
+    MODIFIE FOR EACH TYPE OF MOLECULE (n_channels)
+    nstep depends on simulation number of steps (e.g. nsteps in input.in)
+    """
+    AU_TO_FS   = 0.02418884254
+    n_channels = 9
+    n_steps    = 2100   # number of simulation steps, 
+    timestep   = 10     # au
+    procentual = 1      # 0 - 1 or 0-100
+    
+    channel_pop = np.zeros(shape=(n_steps,n_channels))   # 2D array, 0 column time, rest {1,n_channel} are channels
+    totpop      = np.zeros(shape=(n_steps))
+    print(len(analyze_geoms))
+    for rec in range(0,len(analyze_geoms)):
+     # print(analyze_geoms[rec][1])
+      channel = int(analyze_geoms[rec][1])
+      step    = int(analyze_geoms[rec][0])
+      time    = (step * timestep) * AU_TO_FS
+      channel_pop[step][channel] = channel_pop[step][channel] + 1 
+    # channel_pop[channel][step]=channel_pop(channel,step)+1 
+    # print(t)  
+    for step in range(1,n_steps+1):   # +1 since upper limit index is exluded
+        for chan in range(0,n_channels):
+            totpop[step] = sum(channel_pop[step])
+            print(step,totpop[step])
+            channel_pop[step][channel] = channel_pop[step][channel]/totpop[step]*procentual ! print %
+           
 ##############################################
      ##########  MAIN   ##########
 ##############################################
