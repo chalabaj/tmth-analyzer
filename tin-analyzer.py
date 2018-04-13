@@ -257,25 +257,22 @@ def channel_statistics(analyze_geoms):
  
     channel_pop = np.zeros(shape=(n_steps,n_channels))   # 2D array, 0 column time, rest {1,n_channel} are channels
     #totpop     = np.zeros(shape=(n_steps))             # no need to store totpop in eacxh step
-    print("Total number of geoms: ",len(analyze_geoms))
+    print("Total number of geoms: ",len(analyze_geoms)-1)
     for rec in range(1,len(analyze_geoms)):             # first row is 0,0 entry from array init
-     # print(analyze_geoms[rec][1])
       channel = int(analyze_geoms[rec][1])
       step    = int(analyze_geoms[rec][0])
       time    = (step * timestep) * AU_TO_FS
-      channel_pop[step][channel] = channel_pop[step][channel] + 1 
-    # channel_pop[channel][step]=channel_pop(channel,step)+1 
-    # print(t)  
+      channel_pop[step][channel] = channel_pop[step][channel] + 1  
     for step in range(1,n_steps):    
         totpop = sum(channel_pop[step])
         time    = (step * timestep) * AU_TO_FS
         for chan in range(0,n_channels):
             channel_pop[step][chan] = (channel_pop[step][chan]/totpop) * procentual 
             #ch=("%s" % " ".join(str(list(channel_pop[step]))))
-        #print(time,allchan,totpop)
-        print( str(time) + ("  ".join("%f"%n for n in channel_pop[step])))
+        
+        line = ( str('%.4f ' %time) + ("  ".join("%.3f" %n for n in channel_pop[step])))
         with open(results_file, 'w') as res_file:
- 
+         res_file.write(line)
          res_file.close()
           
 ##############################################
