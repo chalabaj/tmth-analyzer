@@ -231,7 +231,7 @@ def analyze_th(dist_mat):
      if (me_diss == 1 and oh_diss == 0 and h_ats_on_heavies[3] == 2) : channel = 8    #H from CH3 group  
   print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
   print("----------------------------------")
-  return channel,h_diss
+  return channel
 
 # GEOMETRY ANALYSIS  
 def analyze_tm(dist_mat):
