@@ -154,8 +154,79 @@ SnX_bond_dist = 5.000   # x = C or O
 # GEOMETRY ANALYSIS  
 def analyze_th(dist_mat):
 #print(molecule,natoms)
-    channel = 0
+  channel = 0
+  me_diss = 0
+  oh_diss = 0
+  h_diss  = 0                      # number of dissciated hydrogen atom
+  h_diss_index = []                # which H atoms are dissociated
+  h_bonds = []                     # list of X - H bonds to test for shortest distance 
+  h_ats_on_heavies = [0,0,0,0,0]   # how many H atoms are on each heavy atom
+  for hydrogen_atom in range(5,natoms):
+     for heavy_atom in range(0,5):                                    #  last index excluded, upper diagonal l matrix, first index < second one
+         h_bonds.append(dist_mat[heavy_atom][hydrogen_atom])
+         #print(hydrogen_atom,heavy_atom," : ",dist_mat[heavy_atom][hydrogen_atom])
     
+     shortest_bond = min((j,i) for i,j in enumerate(h_bonds))         #  find the smallest bod and print heavy atom related to it, enumerate over heavy atoms 0 - 5
+     h_bonds.clear()  # dont need anymore 
+     
+     #1a) how many hydrogens are on each heavy atom
+     if shortest_bond[0] < H_diss_dist: 
+       h_ats_on_heavies[shortest_bond[1]] = h_ats_on_heavies[shortest_bond[1]] + 1
+     else : 
+       h_diss = h_diss + 1 
+       h_diss_index.append(shortest_bond[1])
+       if h_diss >= 2: 
+         print("2 diss H CAREFULL")
+  print("Sn,C,C,C,O: ",h_ats_on_heavies) 
+  """
+  atom order:
+  0    O       Sn-C  = 1,2
+  1    Sn      
+  2    O       Sn-O  = 1,2
+  3    C       Sn-C  = 1,3
+  4    O       Sn-O  = 1,4
+  5-11 H
+
+  Channels:
+  0 nothing happened
+  1 1 Methyl diss
+  2 1 OH diss 
+  3 2 OH diss  
+  4 OH + Methyl diss
+  5 Methyl + 2 or more OH diss
+  6 H diss + komplex
+  7 H diss (komplex + O + H)
+  8 H diss (komplex + CH2 + H)
+  9 3 OH diss
+  """
+  if dist_mat[1][3] > SnX_bond_dist:  
+        me_diss = me_diss + 1
+        
+  if dist_mat[0][1] > SnX_bond_dist:  
+        oh_diss = oh_diss + 1
+        if (me_diss == 0 and h_ats_on_heavies[0] == 0) : channel = 7 
+        
+  if dist_mat[1][2] > SnX_bond_dist:  
+        oh_diss = oh_diss + 1 
+        if (me_diss == 0 and h_ats_on_heavies[2] == 0) : channel = 7  
+              
+  if dist_mat[1][4] > SnX_bond_dist:  
+        oh_diss = oh_diss + 1
+        if (me_diss == 0 and h_ats_on_heavies[4] == 0) : channel = 7 
+                
+  if h_diss == 0:
+     if   me_diss == 0:   
+          if   oh_diss == 1: channel = 2 
+     elif me_diss == 1:
+          if   oh_diss == 0: channel = 1 
+          elif oh_diss == 1: channel = 4 
+          elif oh_diss == 2: channel = 5     
+          elif oh_diss == 3: channel = 5
+  elif h_diss == 1:
+     if (me_diss == 0 and oh_diss == 0): channel = 6
+     if (me_diss == 1 and oh_diss == 0 and h_ats_on_heavies[4] == 0) : channel = 8    #H from O group  
+  #print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
+  #print("----------------------------------")
     return channel
 
 # GEOMETRY ANALYSIS  
@@ -172,8 +243,6 @@ def analyze_tm(dist_mat):
 #1) WHERE ARE HYDROGEN ATOMS
 
   channel = 0
-  me_diss = 0
-  oh_diss = 0
   h_diss  = 0                      # number of dissciated hydrogen atom
   h_diss_index = []                # which H atoms are dissociated
   h_bonds = []                     # list of X - H bonds to test for shortest distance 
