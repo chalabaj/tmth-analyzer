@@ -178,7 +178,7 @@ def analyze_th(dist_mat):
        h_diss_index.append(shortest_bond[1])
        if h_diss >= 2: 
          print("#### 2 diss H CAREFULL")
-  print("O,Sn,O,C,O: ",h_ats_on_heavies) 
+ # print("O,Sn,O,C,O: ",h_ats_on_heavies) 
   """
   atom order:
   0    O       Sn-C  = 1,2
@@ -230,8 +230,8 @@ def analyze_th(dist_mat):
   elif h_diss == 1:
      if (me_diss == 0 and oh_diss == 0): channel = 6
      if (me_diss == 1 and oh_diss == 0 and h_ats_on_heavies[3] == 2) : channel = 8    #H from CH3 group  
-  print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
-  print("----------------------------------")
+ # print(' channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies:',channel,h_diss,me_diss,oh_diss,sum(h_ats_on_heavies))  
+ # print("----------------------------------")
   return channel,h_diss
 
 # GEOMETRY ANALYSIS  
