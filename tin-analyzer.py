@@ -165,7 +165,7 @@ def analyze_th(dist_mat):
   for hydrogen_atom in range(5,natoms):
      for heavy_atom in range(0,5):                                    #  last index excluded, upper diagonal l matrix, first index < second one
          h_bonds.append(dist_mat[heavy_atom][hydrogen_atom])
-         print(hydrogen_atom,heavy_atom," : ",dist_mat[heavy_atom][hydrogen_atom])
+         #print(hydrogen_atom,heavy_atom," : ",dist_mat[heavy_atom][hydrogen_atom])
     
      shortest_bond = min((j,i) for i,j in enumerate(h_bonds))         #  find the smallest bod and print heavy atom related to it, enumerate over heavy atoms 0 - 5
      h_bonds.clear()  # dont need anymore 
@@ -177,8 +177,8 @@ def analyze_th(dist_mat):
        h_diss = h_diss + 1 
        h_diss_index.append(shortest_bond[1])
        if h_diss >= 2: 
-         print("2 diss H CAREFULL")
-  print("C,C,C,O: ",h_ats_on_heavies) 
+         print("#### 2 diss H CAREFULL")
+  print("O,Sn,O,C,O: ",h_ats_on_heavies) 
   """
   atom order:
   0    O       Sn-C  = 1,2
@@ -200,7 +200,7 @@ def analyze_th(dist_mat):
   8 H diss (komplex + CH2 + H)
   9 3 OH diss
   """
-  if h_ats_on_heavies[1] > 0:  exit("H transfer to Sn, check")
+  if h_ats_on_heavies[1] > 0:  exit("##########   H transfer to Sn, check!!!!! #####")
         
   if dist_mat[1][3] > SnX_bond_dist:  
         me_diss = me_diss + 1
@@ -221,6 +221,7 @@ def analyze_th(dist_mat):
      if   me_diss == 0:   
           if   oh_diss == 1: channel = 2 
           if   oh_diss == 2: channel = 3
+          if   oh_diss == 3: channel = 9
      elif me_diss == 1:
           if   oh_diss == 0: channel = 1 
           elif oh_diss == 1: channel = 4 
@@ -269,7 +270,7 @@ def analyze_tm(dist_mat):
        if h_diss >= 2: 
          print("2 diss H CAREFULL")
   #print("Sn,C,C,C,O: ",h_ats_on_heavies) 
-  if h_ats_on_heavies[0] > 0:  exit("H transfer to Sn, check") 
+  if h_ats_on_heavies[0] > 0: exit("##########   H transfer to Sn, check!!!!! #####")
 #2) Where are the heavy atoms 
   oh_diss = 0   # OH group diss 0/1
   me_diss = 0   # Methyl group diss / if h_diss = 0 otherwise CH2, CH1 possible
