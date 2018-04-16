@@ -358,7 +358,7 @@ print("#######################\n")
 
 analyze_geoms  = process_movies(movies,geoms)   # np.array returning time, channel over all geoms
 #print(analyze_geoms)
-#statistic      = channel_statistics(analyze_geoms)
+statistic      = channel_statistics(analyze_geoms)
 
 
 
